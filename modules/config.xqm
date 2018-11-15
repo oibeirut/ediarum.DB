@@ -485,9 +485,13 @@ declare function config:get-ediarum-index($project-name as xs:string, $ediarum-i
             element ul {
                 for $x in $entries//tei:person
                 let $name :=
+                    (: this all depends on the concrete mark-up of our authority files.:)
+                    (: the if condition will fail and we change the fallback :)
                     if ($x/tei:persName[@type='reg'][1]/tei:forename)
                     then (concat(string-join($x/tei:persName[@type='reg'][1]/tei:surname/normalize-space()), ', ', string-join($x/tei:persName[@type='reg'][1]/tei:forename/normalize-space())))
-                    else ($x/tei:persName[@type='reg'][1]/tei:name[1]/normalize-space())
+                    (: the original else  :)
+                    (: else ($x/tei:persName[@type='reg'][1]/tei:name[1]/normalize-space()) :)
+                    else ($x/tei:persName[1]/normalize-space())
                 let $lifedate :=
                     if ($x/tei:floruit)
                     then (concat(' (', $x/tei:floruit, ')'))
