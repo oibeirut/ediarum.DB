@@ -486,12 +486,14 @@ declare function config:get-ediarum-index($project-name as xs:string, $ediarum-i
                 for $x in $entries//tei:person
                 let $name :=
                     (: this all depends on the concrete mark-up of our authority files.:)
-                    (: the if condition will fail and we change the fallback :)
+                    (: a very robust fallback option is needed for all if conditions :)
                     if ($x/tei:persName[@type='reg'][1]/tei:forename)
                     then (concat(string-join($x/tei:persName[@type='reg'][1]/tei:surname/normalize-space()), ', ', string-join($x/tei:persName[@type='reg'][1]/tei:forename/normalize-space())))
                     (: the original else  :)
-                    (: else ($x/tei:persName[@type='reg'][1]/tei:name[1]/normalize-space()) :)
-                    else ($x/tei:persName[1]/normalize-space())
+                    else if ($x/tei:persName[@type='reg'][tei:name][1])
+                        then ($x/tei:persName[@type='reg'][1]/tei:name[1]/normalize-space()) 
+                        (: more rebust fallback :)
+                        else ($x/tei:persName[1]/normalize-space())
                 let $lifedate :=
                     if ($x/tei:floruit)
                     then (concat(' (', $x/tei:floruit, ')'))
@@ -523,9 +525,14 @@ declare function config:get-ediarum-index($project-name as xs:string, $ediarum-i
             element ul {
                 for $place in $entries//tei:place
                 let $name :=
+                    (: this all depends on the concrete mark-up of our authority files.:)
+                    (: a very robust fallback option is needed for all if conditions :)
                     if ($place[ancestor::tei:place])
                     then ($place/ancestor::tei:place/tei:placeName[@type='reg'][1]/normalize-space()||' - '||$place/tei:placeName[@type='reg'][1]/normalize-space())
-                    else ($place/tei:placeName[@type='reg'][1]/normalize-space())
+                    else if ($place/tei:placeName[@type='reg'])
+                        then ($place/tei:placeName[@type='reg'][1]/normalize-space())
+                        (: more rebust fallback :)
+                        else ($place/tei:placeName[1]/normalize-space())
                 let $altname :=
                     if ($place/tei:placeName[@type='alt'] and $show-details='altname')
                     then (' ['||
